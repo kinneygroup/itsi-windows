@@ -219,15 +219,9 @@
             "search_buckets": "",
             "search_entities": null,
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))"
-            ],
-            "search_time_series": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` | timechart avg(health_score) AS aggregate"
-            ],
-            "search_time_series_aggregate": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` | timechart avg(health_score) AS aggregate"
-            ],
+            "search_time_compare": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))",
+            "search_time_series": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` | timechart avg(health_score) AS aggregate",
+            "search_time_series_aggregate": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowssecurity-and-compliance)` | timechart avg(health_score) AS aggregate",
             "search_time_series_entities": "",
             "search_type": "adhoc",
             "service_title": "Security and Compliance",
@@ -286,7 +280,7 @@
             "adaptive_thresholding_training_window": "-7d",
             "adaptive_thresholds_is_enabled": false,
             "aggregate_eval": null,
-            "aggregate_statop": "avg",
+            "aggregate_statop": "min",
             "aggregate_threshold_alert_enabled": false,
             "aggregate_thresholds": {
                 "base_severity_color": "#99D18B",
@@ -297,7 +291,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "ComplianceAverage",
+                "metric_field": "aggregate",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -315,7 +309,7 @@
             "anomaly_detection_training_window": null,
             "backfill_earliest_time": "-7d",
             "backfill_enabled": false,
-            "base_search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host",
+            "base_search": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) ",
             "base_search_id": null,
             "base_search_metric": null,
             "cohesive_ad": {
@@ -330,12 +324,12 @@
             },
             "datamodel_filter": [],
             "datamodel_filter_clauses": null,
-            "description": "Ensures that devices are receiving and installing the latest security updates.",
+            "description": "Monitors devices for active WinEventLog forwards",
             "did_load_recommendation": false,
             "enabled": false,
             "entity_filter_field": "host",
             "entity_split_field": "host",
-            "entity_statop": "avg",
+            "entity_statop": "max",
             "entity_thresholds": {
                 "base_severity_color": "#99D18B",
                 "base_severity_color_light": "#DCEFD7",
@@ -345,7 +339,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "ComplianceAverage",
+                "metric_field": "event_logs_configured",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -358,339 +352,9 @@
             "gap_severity_value": "-1",
             "is_filter_entities_to_service": false,
             "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
-            "key": "da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status",
-            "kpi_base_search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host",
-            "kpi_template_kpi_id": "",
-            "kpi_threshold_template_id": "",
-            "metric_qualifier": "",
-            "metric_search_spec": {
-                "metric_index": "",
-                "metric_name": ""
-            },
-            "recommendation_training_window": "-30d",
-            "search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status, true, true, true)` | eval kpi=\"Patch Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
-            "search_alert": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status, true, true, true)` | eval kpi=\"Patch Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`"
-            ],
-            "search_alert_earliest": "5",
-            "search_alert_entities": "",
-            "search_buckets": "",
-            "search_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`"
-            ],
-            "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`"
-            ],
-            "search_time_series": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`"
-            ],
-            "search_time_series_aggregate": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`"
-            ],
-            "search_time_series_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval patch_status=if(searchmatch(\"Security Update\"), 1, 0) | stats avg(patch_status) as Patch_Status by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`"
-            ],
-            "search_type": "adhoc",
-            "service_title": "Security and Compliance",
-            "threshold_direction": "both",
-            "threshold_eval": null,
-            "threshold_field": "Patch_Status",
-            "time_policies": {
-                "policies": {
-                    "default_policy": {
-                        "aggregate_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "ComplianceAverage",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "entity_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "ComplianceAverage",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "policy_type": "static",
-                        "time_blocks": [],
-                        "title": "Default"
-                    }
-                }
-            },
-            "title": "Patch Status",
-            "trending_ad": {
-                "sensitivity": 8
-            },
-            "type": "kpis_primary",
-            "tz_offset": null,
-            "unit": "",
-            "urgency": 5.0,
-            "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
-        },
-        {
-            "adaptive_thresholding_training_window": "-7d",
-            "adaptive_thresholds_is_enabled": false,
-            "aggregate_eval": null,
-            "aggregate_statop": "avg",
-            "aggregate_threshold_alert_enabled": false,
-            "aggregate_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "ComplianceAverage",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "aggregate_thresholds_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_rules": [],
-            "alert_eval": null,
-            "alert_lag": "30",
-            "alert_on": "both",
-            "alert_period": "5",
-            "anomaly_detection_alerting_enabled": false,
-            "anomaly_detection_is_enabled": false,
-            "anomaly_detection_sensitivity": null,
-            "anomaly_detection_training_window": null,
-            "backfill_earliest_time": "-7d",
-            "backfill_enabled": false,
-            "base_search": "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host",
-            "base_search_id": null,
-            "base_search_metric": null,
-            "cohesive_ad": {
-                "sensitivity": 8
-            },
-            "cohesive_anomaly_detection_is_enabled": false,
-            "datamodel": {
-                "datamodel": "",
-                "field": "",
-                "object": "",
-                "owner_field": ""
-            },
-            "datamodel_filter": [],
-            "datamodel_filter_clauses": null,
-            "description": "Tracks security-related events, such as login attempts and unauthorized access.",
-            "did_load_recommendation": false,
-            "enabled": false,
-            "entity_filter_field": "host",
-            "entity_split_field": "host",
-            "entity_statop": "avg",
-            "entity_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "ComplianceAverage",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "fill_gaps": "null_value",
-            "gap_custom_alert_value": 0.0,
-            "gap_severity": "unknown",
-            "gap_severity_color": "#CCCCCC",
-            "gap_severity_color_light": "#EEEEEE",
-            "gap_severity_value": "-1",
-            "is_filter_entities_to_service": false,
-            "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
-            "key": "da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring",
-            "kpi_base_search": "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host",
-            "kpi_template_kpi_id": "",
-            "kpi_threshold_template_id": "",
-            "metric_qualifier": "",
-            "metric_search_spec": {
-                "metric_index": "",
-                "metric_name": ""
-            },
-            "recommendation_training_window": "-30d",
-            "search": "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring, true, true, true)` | eval kpi=\"Security Event Monitoring\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
-            "search_alert": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring, true, true, true)` | eval kpi=\"Security Event Monitoring\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`"
-            ],
-            "search_alert_earliest": "5",
-            "search_alert_entities": "",
-            "search_buckets": "",
-            "search_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`"
-            ],
-            "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`"
-            ],
-            "search_time_series": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`"
-            ],
-            "search_time_series_aggregate": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`"
-            ],
-            "search_time_series_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) | eval KPI_Value=1 | stats count as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`"
-            ],
-            "search_type": "adhoc",
-            "service_title": "Security and Compliance",
-            "threshold_direction": "both",
-            "threshold_eval": null,
-            "threshold_field": "KPI_Value",
-            "time_policies": {
-                "policies": {
-                    "default_policy": {
-                        "aggregate_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "ComplianceAverage",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "entity_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "ComplianceAverage",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "policy_type": "static",
-                        "time_blocks": [],
-                        "title": "Default"
-                    }
-                }
-            },
-            "title": "Security Event Monitoring",
-            "trending_ad": {
-                "sensitivity": 8
-            },
-            "type": "kpis_primary",
-            "tz_offset": null,
-            "unit": "",
-            "urgency": 5.0,
-            "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
-        },
-        {
-            "adaptive_thresholding_training_window": "-7d",
-            "adaptive_thresholds_is_enabled": false,
-            "aggregate_eval": null,
-            "aggregate_statop": "avg",
-            "aggregate_threshold_alert_enabled": false,
-            "aggregate_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "ComplianceAverage",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "aggregate_thresholds_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_rules": [],
-            "alert_eval": null,
-            "alert_lag": "30",
-            "alert_on": "both",
-            "alert_period": "5",
-            "anomaly_detection_alerting_enabled": false,
-            "anomaly_detection_is_enabled": false,
-            "anomaly_detection_sensitivity": null,
-            "anomaly_detection_training_window": null,
-            "backfill_earliest_time": "-7d",
-            "backfill_enabled": false,
-            "base_search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host",
-            "base_search_id": null,
-            "base_search_metric": null,
-            "cohesive_ad": {
-                "sensitivity": 8
-            },
-            "cohesive_anomaly_detection_is_enabled": false,
-            "datamodel": {
-                "datamodel": "",
-                "field": "",
-                "object": "",
-                "owner_field": ""
-            },
-            "datamodel_filter": [],
-            "datamodel_filter_clauses": null,
-            "description": "Monitors devices for compliance with organizational policies and standards.",
-            "did_load_recommendation": false,
-            "enabled": false,
-            "entity_filter_field": "host",
-            "entity_split_field": "host",
-            "entity_statop": "avg",
-            "entity_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "ComplianceAverage",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "fill_gaps": "null_value",
-            "gap_custom_alert_value": 0.0,
-            "gap_severity": "unknown",
-            "gap_severity_color": "#CCCCCC",
-            "gap_severity_color_light": "#EEEEEE",
-            "gap_severity_value": "-1",
-            "is_filter_entities_to_service": false,
-            "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
+            "is_split_by_entity": true,
             "key": "da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance",
-            "kpi_base_search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host",
+            "kpi_base_search": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0)",
             "kpi_template_kpi_id": "",
             "kpi_threshold_template_id": "",
             "metric_qualifier": "",
@@ -699,35 +363,23 @@
                 "metric_name": ""
             },
             "recommendation_training_window": "-30d",
-            "search": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance, true, true, true)` | eval kpi=\"Configuration Compliance\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
-            "search_alert": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance, true, true, true)` | eval kpi=\"Configuration Compliance\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`"
-            ],
+            "search": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_entity(max, event_logs_configured, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(min)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance, true, true, true)` | eval kpi=\"Configuration Compliance\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_single_value(max, min, event_logs_configured, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
+            "search_alert": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_entity(max, event_logs_configured, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(min)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance, true, true, true)` | eval kpi=\"Configuration Compliance\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
             "search_alert_earliest": "5",
             "search_alert_entities": "",
             "search_buckets": "",
-            "search_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`"
-            ],
+            "search_entities": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_single_value(max, min, event_logs_configured, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`"
-            ],
-            "search_time_series": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`"
-            ],
-            "search_time_series_aggregate": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`"
-            ],
-            "search_time_series_entities": [
-                "`windows_index` sourcetype=WinEventLog:Security OR sourcetype=WinEventLog:System | eval compliance_status=if(match(_raw, \"compliance criteria regex\"), 1, 0) | stats avg(compliance_status) as ComplianceAverage by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`"
-            ],
+            "search_time_compare": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_and_compare(max, min, event_logs_configured, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
+            "search_time_series": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_entity_time_series(max, event_logs_configured, \"host\", 5)` | `aggregate_entity_into_service_time_series(min, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
+            "search_time_series_aggregate": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_entity_time_series(max, event_logs_configured, \"host\", 5)` | `aggregate_entity_into_service_time_series(min, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-configuration-compliance)`",
+            "search_time_series_entities": "|tstats count where `itsi-cp-atlas-windows-indexes` source=WinEventLog* by host | eval event_logs_configured=if(count>0,1,0) | `aggregate_raw_into_limited_entity_time_series(max, event_logs_configured, \"host\", 5)`",
             "search_type": "adhoc",
             "service_title": "Security and Compliance",
             "threshold_direction": "both",
             "threshold_eval": null,
-            "threshold_field": "ComplianceAverage",
+            "threshold_field": "event_logs_configured",
             "time_policies": {
                 "policies": {
                     "default_policy": {
@@ -774,8 +426,311 @@
             "unit": "",
             "urgency": 5.0,
             "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
+            "was_recommendation_modified": false
+        },
+        {
+            "adaptive_thresholding_training_window": "-7d",
+            "adaptive_thresholds_is_enabled": false,
+            "aggregate_eval": "",
+            "aggregate_statop": "avg",
+            "aggregate_threshold_alert_enabled": false,
+            "aggregate_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "aggregate",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "aggregate_thresholds_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_rules": [],
+            "alert_eval": "",
+            "alert_lag": "30",
+            "alert_on": "both",
+            "alert_period": "5",
+            "anomaly_detection_alerting_enabled": false,
+            "anomaly_detection_is_enabled": false,
+            "anomaly_detection_sensitivity": null,
+            "anomaly_detection_training_window": null,
+            "backfill_earliest_time": "-7d",
+            "backfill_enabled": false,
+            "base_search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host",
+            "base_search_id": null,
+            "base_search_metric": null,
+            "cohesive_ad": {
+                "sensitivity": 8
+            },
+            "cohesive_anomaly_detection_is_enabled": false,
+            "datamodel": {
+                "datamodel": "",
+                "field": "",
+                "object": "",
+                "owner_field": ""
+            },
+            "datamodel_filter": [],
+            "datamodel_filter_clauses": null,
+            "description": "Tracks security-related events, such as login attempts and unauthorized access.",
+            "did_load_recommendation": false,
+            "enabled": false,
+            "entity_filter_field": "host",
+            "entity_split_field": "host",
+            "entity_statop": "avg",
+            "entity_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "LogonEvents",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "fill_gaps": "null_value",
+            "gap_custom_alert_value": 0.0,
+            "gap_severity": "unknown",
+            "gap_severity_color": "#CCCCCC",
+            "gap_severity_color_light": "#EEEEEE",
+            "gap_severity_value": "-1",
+            "is_filter_entities_to_service": false,
+            "is_recommended_time_policies": false,
+            "is_split_by_entity": true,
+            "key": "da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host",
+            "kpi_template_kpi_id": "",
+            "kpi_threshold_template_id": "",
+            "metric_qualifier": "",
+            "metric_search_spec": {
+                "metric_index": "",
+                "metric_name": ""
+            },
+            "recommendation_training_window": "-30d",
+            "search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_entity(avg, LogonEvents, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring, true, true, true)` | eval kpi=\"Log On Event Monitoring\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_single_value(avg, avg, LogonEvents, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_entity(avg, LogonEvents, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring, true, true, true)` | eval kpi=\"Log On Event Monitoring\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
+            "search_alert_earliest": "5",
+            "search_alert_entities": "",
+            "search_buckets": "",
+            "search_entities": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_single_value(avg, avg, LogonEvents, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
+            "search_occurrences": 1.0,
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_and_compare(avg, avg, LogonEvents, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_entity_time_series(avg, LogonEvents, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_entity_time_series(avg, LogonEvents, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-security-event-monitoring)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security (EventCode=4624 OR EventCode=4625 OR EventCode=4648) \n| stats count as LogonEvents by host | `aggregate_raw_into_limited_entity_time_series(avg, LogonEvents, \"host\", 5)`",
+            "search_type": "adhoc",
+            "service_title": "Security and Compliance",
+            "threshold_direction": "both",
+            "threshold_eval": "",
+            "threshold_field": "LogonEvents",
+            "time_policies": {
+                "policies": {
+                    "default_policy": {
+                        "aggregate_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "ComplianceAverage",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "entity_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "ComplianceAverage",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "policy_type": "static",
+                        "time_blocks": [],
+                        "title": "Default"
+                    }
+                }
+            },
+            "title": "Log On Event Monitoring",
+            "trending_ad": {
+                "sensitivity": 8
+            },
+            "type": "kpis_primary",
+            "tz_offset": null,
+            "unit": "",
+            "urgency": 5.0,
+            "use_time_policies": false,
+            "was_recommendation_modified": false
+        },
+        {
+            "adaptive_thresholding_training_window": "-7d",
+            "adaptive_thresholds_is_enabled": false,
+            "aggregate_eval": null,
+            "aggregate_statop": "min",
+            "aggregate_threshold_alert_enabled": false,
+            "aggregate_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "aggregate",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "aggregate_thresholds_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_rules": [],
+            "alert_eval": null,
+            "alert_lag": "30",
+            "alert_on": "both",
+            "alert_period": "5",
+            "anomaly_detection_alerting_enabled": false,
+            "anomaly_detection_is_enabled": false,
+            "anomaly_detection_sensitivity": null,
+            "anomaly_detection_training_window": null,
+            "backfill_earliest_time": "-7d",
+            "backfill_enabled": false,
+            "base_search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host",
+            "base_search_id": null,
+            "base_search_metric": null,
+            "cohesive_ad": {
+                "sensitivity": 8
+            },
+            "cohesive_anomaly_detection_is_enabled": false,
+            "datamodel": {
+                "datamodel": "",
+                "field": "",
+                "object": "",
+                "owner_field": ""
+            },
+            "datamodel_filter": [],
+            "datamodel_filter_clauses": null,
+            "description": "Ensures that devices are receiving and installing the latest security updates.",
+            "did_load_recommendation": false,
+            "enabled": false,
+            "entity_filter_field": "host",
+            "entity_split_field": "host",
+            "entity_statop": "max",
+            "entity_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "patch_status",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "fill_gaps": "null_value",
+            "gap_custom_alert_value": 0.0,
+            "gap_severity": "unknown",
+            "gap_severity_color": "#CCCCCC",
+            "gap_severity_color_light": "#EEEEEE",
+            "gap_severity_value": "-1",
+            "is_filter_entities_to_service": false,
+            "is_recommended_time_policies": false,
+            "is_split_by_entity": true,
+            "key": "da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host",
+            "kpi_template_kpi_id": "",
+            "kpi_threshold_template_id": "",
+            "metric_qualifier": "",
+            "metric_search_spec": {
+                "metric_index": "",
+                "metric_name": ""
+            },
+            "recommendation_training_window": "-30d",
+            "search": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_entity(max, patch_status, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(min)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status, true, true, true)` | eval kpi=\"Patch Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_single_value(max, min, patch_status, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_entity(max, patch_status, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `aggregate_entity_into_service(min)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status, true, true, true)` | eval kpi=\"Patch Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowssecurity-and-compliance\" | `assess_urgency` | `gettime`",
+            "search_alert_earliest": "5",
+            "search_alert_entities": "",
+            "search_buckets": "",
+            "search_entities": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_single_value(max, min, patch_status, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
+            "search_occurrences": 1.0,
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_and_compare(max, min, patch_status, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_entity_time_series(max, patch_status, \"host\", 5)` | `aggregate_entity_into_service_time_series(min, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_entity_time_series(max, patch_status, \"host\", 5)` | `aggregate_entity_into_service_time_series(min, 5)` | `assess_severity(da-itsi-cp-atlas-windowssecurity-and-compliance, da-itsi-cp-atlas-windowssecurity-and-compliance-patch-status)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` source=WinEventLog:Security OR source=WinEventLog:System \n| eval patch_status=if(searchmatch(\"Security Update\"), 1, 0)\n| stats max(patch_status) as patch_status by host | `aggregate_raw_into_limited_entity_time_series(max, patch_status, \"host\", 5)`",
+            "search_type": "adhoc",
+            "service_title": "Security and Compliance",
+            "threshold_direction": "both",
+            "threshold_eval": null,
+            "threshold_field": "patch_status",
+            "time_policies": {
+                "policies": {
+                    "default_policy": {
+                        "aggregate_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "ComplianceAverage",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "entity_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "ComplianceAverage",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "policy_type": "static",
+                        "time_blocks": [],
+                        "title": "Default"
+                    }
+                }
+            },
+            "title": "Patch Status",
+            "trending_ad": {
+                "sensitivity": 8
+            },
+            "type": "kpis_primary",
+            "tz_offset": null,
+            "unit": "",
+            "urgency": 5.0,
+            "use_time_policies": false,
+            "was_recommendation_modified": false
         }
     ],
     "service_tags": {

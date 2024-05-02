@@ -2,12 +2,9 @@
     "service_templates": [],
     "services": [
         "da-itsi-cp-atlas-windowsoperating-system-health.json",
-        "da-itsi-cp-atlas-windowsapplication-performance.json",
         "da-itsi-cp-atlas-windowsnetwork-infrastructure.json",
         "da-itsi-cp-atlas-windowssecurity-and-compliance.json",
-        "da-itsi-cp-atlas-windowshardware-integrity.json",
-        "da-itsi-cp-atlas-windowsdatabase-performance.json",
-        "da-itsi-cp-atlas-windowsuser-experience-monitoring.json"
+        "da-itsi-cp-atlas-windowshardware-integrity.json"
     ],
     "kpi_base_searches": []
 }
