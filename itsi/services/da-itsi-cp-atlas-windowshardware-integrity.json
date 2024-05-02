@@ -219,15 +219,9 @@
             "search_buckets": "",
             "search_entities": null,
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))"
-            ],
-            "search_time_series": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` | timechart avg(health_score) AS aggregate"
-            ],
-            "search_time_series_aggregate": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` | timechart avg(health_score) AS aggregate"
-            ],
+            "search_time_compare": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))",
+            "search_time_series": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` | timechart avg(health_score) AS aggregate",
+            "search_time_series_aggregate": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowshardware-integrity)` | timechart avg(health_score) AS aggregate",
             "search_time_series_entities": "",
             "search_type": "adhoc",
             "service_title": "Hardware Integrity",
@@ -297,7 +291,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "aggregate",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -315,7 +309,7 @@
             "anomaly_detection_training_window": null,
             "backfill_earliest_time": "-7d",
             "backfill_enabled": false,
-            "base_search": "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load",
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host",
             "base_search_id": null,
             "base_search_metric": null,
             "cohesive_ad": {
@@ -345,7 +339,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "CPU%",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -358,9 +352,9 @@
             "gap_severity_value": "-1",
             "is_filter_entities_to_service": false,
             "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
+            "is_split_by_entity": true,
             "key": "da-itsi-cp-atlas-windowshardware-integrity-cpu-health",
-            "kpi_base_search": "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host",
             "kpi_template_kpi_id": "",
             "kpi_threshold_template_id": "",
             "metric_qualifier": "",
@@ -369,35 +363,23 @@
                 "metric_name": ""
             },
             "recommendation_training_window": "-30d",
-            "search": "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health, true, true, true)` | eval kpi=\"CPU Health\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
-            "search_alert": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health, true, true, true)` | eval kpi=\"CPU Health\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`"
-            ],
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_entity(avg, CPU%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health, true, true, true)` | eval kpi=\"CPU %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_single_value(avg, avg, CPU%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_entity(avg, CPU%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health, true, true, true)` | eval kpi=\"CPU %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
             "search_alert_earliest": "5",
             "search_alert_entities": "",
             "search_buckets": "",
-            "search_entities": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`"
-            ],
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_single_value(avg, avg, CPU%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`"
-            ],
-            "search_time_series": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`"
-            ],
-            "search_time_series_aggregate": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`"
-            ],
-            "search_time_series_entities": [
-                "`itsi_get_index` sourcetype=Perfmon:CPU | mstats avg(_value) as cpu_load where index=* metric_name=\"Processor._Total.% Processor Time\" by host | eval KPI_Value=cpu_load | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`"
-            ],
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_and_compare(avg, avg, CPU%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_entity_time_series(avg, CPU%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_entity_time_series(avg, CPU%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-cpu-health)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:CPU\n| stats avg(%_Processor_Time) as CPU% by host | `aggregate_raw_into_limited_entity_time_series(avg, CPU%, \"host\", 5)`",
             "search_type": "adhoc",
             "service_title": "Hardware Integrity",
             "threshold_direction": "both",
             "threshold_eval": null,
-            "threshold_field": "KPI_Value",
+            "threshold_field": "CPU%",
             "time_policies": {
                 "policies": {
                     "default_policy": {
@@ -435,17 +417,16 @@
                     }
                 }
             },
-            "title": "CPU Health",
+            "title": "CPU %",
             "trending_ad": {
                 "sensitivity": 8
             },
             "type": "kpis_primary",
             "tz_offset": null,
-            "unit": "",
+            "unit": "%",
             "urgency": 5.0,
             "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
+            "was_recommendation_modified": false
         },
         {
             "adaptive_thresholding_training_window": "-7d",
@@ -462,7 +443,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "aggregate",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -480,7 +461,7 @@
             "anomaly_detection_training_window": null,
             "backfill_earliest_time": "-7d",
             "backfill_enabled": false,
-            "base_search": "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host",
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host",
             "base_search_id": null,
             "base_search_metric": null,
             "cohesive_ad": {
@@ -510,7 +491,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "FreeDisk%",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -523,9 +504,9 @@
             "gap_severity_value": "-1",
             "is_filter_entities_to_service": false,
             "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
+            "is_split_by_entity": true,
             "key": "da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status",
-            "kpi_base_search": "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host",
             "kpi_template_kpi_id": "",
             "kpi_threshold_template_id": "",
             "metric_qualifier": "",
@@ -534,35 +515,23 @@
                 "metric_name": ""
             },
             "recommendation_training_window": "-30d",
-            "search": "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status, true, true, true)` | eval kpi=\"Hard Drive Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
-            "search_alert": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status, true, true, true)` | eval kpi=\"Hard Drive Status\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`"
-            ],
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_entity(avg, FreeDisk%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status, true, true, true)` | eval kpi=\"Free Disk %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_single_value(avg, avg, FreeDisk%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_entity(avg, FreeDisk%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status, true, true, true)` | eval kpi=\"Free Disk %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
             "search_alert_earliest": "5",
             "search_alert_entities": "",
             "search_buckets": "",
-            "search_entities": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`"
-            ],
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_single_value(avg, avg, FreeDisk%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`"
-            ],
-            "search_time_series": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`"
-            ],
-            "search_time_series_aggregate": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`"
-            ],
-            "search_time_series_entities": [
-                "`itsi_get_index` sourcetype=Perfmon:LogicalDisk OR sourcetype=Perfmon:PhysicalDisk | eval KPI_Value=if(metric_name=\"Free Megabytes\", \"Available\", \"Health\") | stats avg(Value) as KPI_Value by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`"
-            ],
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_and_compare(avg, avg, FreeDisk%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_entity_time_series(avg, FreeDisk%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_entity_time_series(avg, FreeDisk%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-hard-drive-status)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:LogicalDisk OR sourcetype=Perfmon*:PhysicalDisk \n| stats avg(%_Free_Space) as FreeDisk% by host | `aggregate_raw_into_limited_entity_time_series(avg, FreeDisk%, \"host\", 5)`",
             "search_type": "adhoc",
             "service_title": "Hardware Integrity",
             "threshold_direction": "both",
             "threshold_eval": null,
-            "threshold_field": "KPI_Value",
+            "threshold_field": "FreeDisk%",
             "time_policies": {
                 "policies": {
                     "default_policy": {
@@ -600,17 +569,16 @@
                     }
                 }
             },
-            "title": "Hard Drive Status",
+            "title": "Free Disk %",
             "trending_ad": {
                 "sensitivity": 8
             },
             "type": "kpis_primary",
             "tz_offset": null,
-            "unit": "",
+            "unit": "%",
             "urgency": 5.0,
             "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
+            "was_recommendation_modified": false
         },
         {
             "adaptive_thresholding_training_window": "-7d",
@@ -627,7 +595,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "aggregate",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -645,7 +613,7 @@
             "anomaly_detection_training_window": null,
             "backfill_earliest_time": "-7d",
             "backfill_enabled": false,
-            "base_search": "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host",
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host",
             "base_search_id": null,
             "base_search_metric": null,
             "cohesive_ad": {
@@ -675,7 +643,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Temperature",
+                "metric_field": "MemoryUsed%",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -688,9 +656,9 @@
             "gap_severity_value": "-1",
             "is_filter_entities_to_service": false,
             "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
+            "is_split_by_entity": true,
             "key": "da-itsi-cp-atlas-windowshardware-integrity-temperature",
-            "kpi_base_search": "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host",
             "kpi_template_kpi_id": "",
             "kpi_threshold_template_id": "",
             "metric_qualifier": "",
@@ -699,35 +667,23 @@
                 "metric_name": ""
             },
             "recommendation_training_window": "-30d",
-            "search": "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature, true, true, true)` | eval kpi=\"Temperature\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
-            "search_alert": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature, true, true, true)` | eval kpi=\"Temperature\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`"
-            ],
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_entity(avg, MemoryUsed%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature, true, true, true)` | eval kpi=\"Memory Used %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_single_value(avg, avg, MemoryUsed%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_entity(avg, MemoryUsed%, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowshardware-integrity\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature, true, true, true)` | eval kpi=\"Memory Used %\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowshardware-integrity\" | `assess_urgency` | `gettime`",
             "search_alert_earliest": "5",
             "search_alert_entities": "",
             "search_buckets": "",
-            "search_entities": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`"
-            ],
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_single_value(avg, avg, MemoryUsed%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`"
-            ],
-            "search_time_series": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`"
-            ],
-            "search_time_series_aggregate": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`"
-            ],
-            "search_time_series_entities": [
-                "`itsi_get_index` sourcetype=Perfmon OR sourcetype=WinHostMon | eval Temperature=if(sourcetype=\"Perfmon\", Value, Temperature) | stats avg(Temperature) as Temperature by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`"
-            ],
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_and_compare(avg, avg, MemoryUsed%, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_entity_time_series(avg, MemoryUsed%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_entity_time_series(avg, MemoryUsed%, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowshardware-integrity, da-itsi-cp-atlas-windowshardware-integrity-temperature)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon*:Memory\n| stats avg(%_Committed_Bytes_In_Use) as MemoryUsed% by host | `aggregate_raw_into_limited_entity_time_series(avg, MemoryUsed%, \"host\", 5)`",
             "search_type": "adhoc",
             "service_title": "Hardware Integrity",
             "threshold_direction": "both",
             "threshold_eval": null,
-            "threshold_field": "Temperature",
+            "threshold_field": "MemoryUsed%",
             "time_policies": {
                 "policies": {
                     "default_policy": {
@@ -765,17 +721,16 @@
                     }
                 }
             },
-            "title": "Temperature",
+            "title": "Memory Used %",
             "trending_ad": {
                 "sensitivity": 8
             },
             "type": "kpis_primary",
             "tz_offset": null,
-            "unit": "",
+            "unit": "%",
             "urgency": 5.0,
             "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
+            "was_recommendation_modified": false
         }
     ],
     "service_tags": {

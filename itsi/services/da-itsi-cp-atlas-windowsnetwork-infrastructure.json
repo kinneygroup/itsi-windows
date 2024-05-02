@@ -219,15 +219,9 @@
             "search_buckets": "",
             "search_entities": null,
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))"
-            ],
-            "search_time_series": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` | timechart avg(health_score) AS aggregate"
-            ],
-            "search_time_series_aggregate": [
-                "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` | timechart avg(health_score) AS aggregate"
-            ],
+            "search_time_compare": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` [| stats count | addinfo | eval search= \"earliest=\" + tostring(info_min_time-(info_max_time-info_min_time))+ \" latest=\" + tostring(info_max_time) |fields search] | addinfo | eval bucket=if(_time<info_max_time-((info_max_time-info_min_time)/2), \"last_window\", \"current_window\") | stats avg(health_score) AS aggregate BY bucket | reverse | delta aggregate AS window_delta | search bucket=current_window | eval window_direction=if(window_delta >0, \"increase\", if(window_delta < 0, \"decrease\", \"none\"))",
+            "search_time_series": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` | timechart avg(health_score) AS aggregate",
+            "search_time_series_aggregate": "`get_full_itsi_summary_service_health_events(da-itsi-cp-atlas-windowsnetwork-infrastructure)` | timechart avg(health_score) AS aggregate",
             "search_time_series_entities": "",
             "search_type": "adhoc",
             "service_title": "Network Infrastructure",
@@ -297,7 +291,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
+                "metric_field": "aggregate",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -315,337 +309,7 @@
             "anomaly_detection_training_window": null,
             "backfill_earliest_time": "-7d",
             "backfill_enabled": false,
-            "base_search": "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host",
-            "base_search_id": null,
-            "base_search_metric": null,
-            "cohesive_ad": {
-                "sensitivity": 8
-            },
-            "cohesive_anomaly_detection_is_enabled": false,
-            "datamodel": {
-                "datamodel": "",
-                "field": "",
-                "object": "",
-                "owner_field": ""
-            },
-            "datamodel_filter": [],
-            "datamodel_filter_clauses": null,
-            "description": "Monitors the amount of traffic passing through the network interfaces.",
-            "did_load_recommendation": false,
-            "enabled": false,
-            "entity_filter_field": "host",
-            "entity_split_field": "host",
-            "entity_statop": "avg",
-            "entity_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "fill_gaps": "null_value",
-            "gap_custom_alert_value": 0.0,
-            "gap_severity": "unknown",
-            "gap_severity_color": "#CCCCCC",
-            "gap_severity_color_light": "#EEEEEE",
-            "gap_severity_value": "-1",
-            "is_filter_entities_to_service": false,
-            "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
-            "key": "da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput",
-            "kpi_base_search": "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host",
-            "kpi_template_kpi_id": "",
-            "kpi_threshold_template_id": "",
-            "metric_qualifier": "",
-            "metric_search_spec": {
-                "metric_index": "",
-                "metric_name": ""
-            },
-            "recommendation_training_window": "-30d",
-            "search": "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput, true, true, true)` | eval kpi=\"Network Throughput\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
-            "search_alert": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput, true, true, true)` | eval kpi=\"Network Throughput\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`"
-            ],
-            "search_alert_earliest": "5",
-            "search_alert_entities": "",
-            "search_buckets": "",
-            "search_entities": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`"
-            ],
-            "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`"
-            ],
-            "search_time_series": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`"
-            ],
-            "search_time_series_aggregate": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`"
-            ],
-            "search_time_series_entities": [
-                "`itsi_index` sourcetype=PerfmonMk:Network | mstats avg(_value) as NetworkThroughput where index=* by host, metric_name | eval metric_name=case(metric_name=\"Network Interface(*)\\Bytes Total/sec\", \"NetworkThroughput\") | stats avg(NetworkThroughput) as KPIValue by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`"
-            ],
-            "search_type": "adhoc",
-            "service_title": "Network Infrastructure",
-            "threshold_direction": "both",
-            "threshold_eval": null,
-            "threshold_field": "KPIValue",
-            "time_policies": {
-                "policies": {
-                    "default_policy": {
-                        "aggregate_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "Network_Error_Rate",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "entity_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "Network_Error_Rate",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "policy_type": "static",
-                        "time_blocks": [],
-                        "title": "Default"
-                    }
-                }
-            },
-            "title": "Network Throughput",
-            "trending_ad": {
-                "sensitivity": 8
-            },
-            "type": "kpis_primary",
-            "tz_offset": null,
-            "unit": "",
-            "urgency": 5.0,
-            "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
-        },
-        {
-            "adaptive_thresholding_training_window": "-7d",
-            "adaptive_thresholds_is_enabled": false,
-            "aggregate_eval": null,
-            "aggregate_statop": "avg",
-            "aggregate_threshold_alert_enabled": false,
-            "aggregate_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "aggregate_thresholds_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_rules": [],
-            "alert_eval": null,
-            "alert_lag": "30",
-            "alert_on": "both",
-            "alert_period": "5",
-            "anomaly_detection_alerting_enabled": false,
-            "anomaly_detection_is_enabled": false,
-            "anomaly_detection_sensitivity": null,
-            "anomaly_detection_training_window": null,
-            "backfill_earliest_time": "-7d",
-            "backfill_enabled": false,
-            "base_search": "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host",
-            "base_search_id": null,
-            "base_search_metric": null,
-            "cohesive_ad": {
-                "sensitivity": 8
-            },
-            "cohesive_anomaly_detection_is_enabled": false,
-            "datamodel": {
-                "datamodel": "",
-                "field": "",
-                "object": "",
-                "owner_field": ""
-            },
-            "datamodel_filter": [],
-            "datamodel_filter_clauses": null,
-            "description": "Measures the percentage of packets that are lost in transmission.",
-            "did_load_recommendation": false,
-            "enabled": false,
-            "entity_filter_field": "host",
-            "entity_split_field": "host",
-            "entity_statop": "avg",
-            "entity_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "fill_gaps": "null_value",
-            "gap_custom_alert_value": 0.0,
-            "gap_severity": "unknown",
-            "gap_severity_color": "#CCCCCC",
-            "gap_severity_color_light": "#EEEEEE",
-            "gap_severity_value": "-1",
-            "is_filter_entities_to_service": false,
-            "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
-            "key": "da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss",
-            "kpi_base_search": "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host",
-            "kpi_template_kpi_id": "",
-            "kpi_threshold_template_id": "",
-            "metric_qualifier": "",
-            "metric_search_spec": {
-                "metric_index": "",
-                "metric_name": ""
-            },
-            "recommendation_training_window": "-30d",
-            "search": "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss, true, true, true)` | eval kpi=\"Packet Loss\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
-            "search_alert": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss, true, true, true)` | eval kpi=\"Packet Loss\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`"
-            ],
-            "search_alert_earliest": "5",
-            "search_alert_entities": "",
-            "search_buckets": "",
-            "search_entities": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`"
-            ],
-            "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`"
-            ],
-            "search_time_series": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`"
-            ],
-            "search_time_series_aggregate": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`"
-            ],
-            "search_time_series_entities": [
-                "`itsi_index` sourcetype=perfmon OR sourcetype=WinHostMon OR sourcetype=WinNetMon | eval packet_loss_percentage=if(isnull(packet_loss), 0, packet_loss) | stats avg(packet_loss_percentage) as KPI_Packet_Loss by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`"
-            ],
-            "search_type": "adhoc",
-            "service_title": "Network Infrastructure",
-            "threshold_direction": "both",
-            "threshold_eval": null,
-            "threshold_field": "KPI_Packet_Loss",
-            "time_policies": {
-                "policies": {
-                    "default_policy": {
-                        "aggregate_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "Network_Error_Rate",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "entity_thresholds": {
-                            "base_severity_color": "#99D18B",
-                            "base_severity_color_light": "#DCEFD7",
-                            "base_severity_label": "normal",
-                            "base_severity_value": 2.0,
-                            "gauge_max": 100,
-                            "gauge_min": 0,
-                            "is_max_static": false,
-                            "is_min_static": true,
-                            "metric_field": "Network_Error_Rate",
-                            "render_boundary_max": 100.0,
-                            "render_boundary_min": 0.0,
-                            "threshold_levels": []
-                        },
-                        "policy_type": "static",
-                        "time_blocks": [],
-                        "title": "Default"
-                    }
-                }
-            },
-            "title": "Packet Loss",
-            "trending_ad": {
-                "sensitivity": 8
-            },
-            "type": "kpis_primary",
-            "tz_offset": null,
-            "unit": "",
-            "urgency": 5.0,
-            "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
-        },
-        {
-            "adaptive_thresholding_training_window": "-7d",
-            "adaptive_thresholds_is_enabled": false,
-            "aggregate_eval": null,
-            "aggregate_statop": "avg",
-            "aggregate_threshold_alert_enabled": false,
-            "aggregate_thresholds": {
-                "base_severity_color": "#99D18B",
-                "base_severity_color_light": "#DCEFD7",
-                "base_severity_label": "normal",
-                "base_severity_value": 2.0,
-                "gauge_max": 100,
-                "gauge_min": 0,
-                "is_max_static": false,
-                "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
-                "render_boundary_max": 100.0,
-                "render_boundary_min": 0.0,
-                "threshold_levels": []
-            },
-            "aggregate_thresholds_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_enabled": false,
-            "aggregate_thresholds_custom_alert_rules": [],
-            "alert_eval": null,
-            "alert_lag": "30",
-            "alert_on": "both",
-            "alert_period": "5",
-            "anomaly_detection_alerting_enabled": false,
-            "anomaly_detection_is_enabled": false,
-            "anomaly_detection_sensitivity": null,
-            "anomaly_detection_training_window": null,
-            "backfill_earliest_time": "-7d",
-            "backfill_enabled": false,
-            "base_search": "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host",
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors",
             "base_search_id": null,
             "base_search_metric": null,
             "cohesive_ad": {
@@ -675,7 +339,7 @@
                 "gauge_min": 0,
                 "is_max_static": false,
                 "is_min_static": true,
-                "metric_field": "Network_Error_Rate",
+                "metric_field": "total_errors",
                 "render_boundary_max": 100.0,
                 "render_boundary_min": 0.0,
                 "threshold_levels": []
@@ -688,9 +352,9 @@
             "gap_severity_value": "-1",
             "is_filter_entities_to_service": false,
             "is_recommended_time_policies": false,
-            "is_split_by_entity": false,
+            "is_split_by_entity": true,
             "key": "da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates",
-            "kpi_base_search": "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors",
             "kpi_template_kpi_id": "",
             "kpi_threshold_template_id": "",
             "metric_qualifier": "",
@@ -699,35 +363,23 @@
                 "metric_name": ""
             },
             "recommendation_training_window": "-30d",
-            "search": "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates, true, true, true)` | eval kpi=\"Network Error Rates\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
-            "search_aggregate": "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
-            "search_alert": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_service(avg, count)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates, true, true, true)` | eval kpi=\"Network Error Rates\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`"
-            ],
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_entity(avg, total_errors, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates, true, true, true)` | eval kpi=\"Network Error Rates\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_single_value(avg, avg, total_errors, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_entity(avg, total_errors, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates, true, true, true)` | eval kpi=\"Network Error Rates\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
             "search_alert_earliest": "5",
             "search_alert_entities": "",
             "search_buckets": "",
-            "search_entities": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_single_value(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`"
-            ],
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_single_value(avg, avg, total_errors, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
             "search_occurrences": 1.0,
-            "search_time_compare": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_and_compare(avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`"
-            ],
-            "search_time_series": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`"
-            ],
-            "search_time_series_aggregate": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`"
-            ],
-            "search_time_series_entities": [
-                "`network_index` sourcetype=WinEventLog:Application OR sourcetype=WinEventLog:System | eval is_error=if(Severity=\"error\", 1, 0) | stats sum(is_error) as Network_Error_Rate by host | `aggregate_raw_into_service_time_series( avg, count, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`"
-            ],
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_and_compare(avg, avg, total_errors, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_entity_time_series(avg, total_errors, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_entity_time_series(avg, total_errors, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-error-rates)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| stats sum(*_Errors) as * by host \n| eval total_errors=Packets_Outbound+Packets_Received \n| table host total_errors | `aggregate_raw_into_limited_entity_time_series(avg, total_errors, \"host\", 5)`",
             "search_type": "adhoc",
             "service_title": "Network Infrastructure",
             "threshold_direction": "both",
             "threshold_eval": null,
-            "threshold_field": "Network_Error_Rate",
+            "threshold_field": "total_errors",
             "time_policies": {
                 "policies": {
                     "default_policy": {
@@ -774,8 +426,311 @@
             "unit": "",
             "urgency": 5.0,
             "use_time_policies": false,
-            "was_recommendation_modified": false,
-            "version": "0.0.1"
+            "was_recommendation_modified": false
+        },
+        {
+            "adaptive_thresholding_training_window": "-7d",
+            "adaptive_thresholds_is_enabled": false,
+            "aggregate_eval": null,
+            "aggregate_statop": "avg",
+            "aggregate_threshold_alert_enabled": false,
+            "aggregate_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "aggregate",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "aggregate_thresholds_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_rules": [],
+            "alert_eval": null,
+            "alert_lag": "30",
+            "alert_on": "both",
+            "alert_period": "5",
+            "anomaly_detection_alerting_enabled": false,
+            "anomaly_detection_is_enabled": false,
+            "anomaly_detection_sensitivity": null,
+            "anomaly_detection_training_window": null,
+            "backfill_earliest_time": "-7d",
+            "backfill_enabled": false,
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time",
+            "base_search_id": null,
+            "base_search_metric": null,
+            "cohesive_ad": {
+                "sensitivity": 8
+            },
+            "cohesive_anomaly_detection_is_enabled": false,
+            "datamodel": {
+                "datamodel": "",
+                "field": "",
+                "object": "",
+                "owner_field": ""
+            },
+            "datamodel_filter": [],
+            "datamodel_filter_clauses": null,
+            "description": "Monitors the amount of traffic passing through the network interfaces.",
+            "did_load_recommendation": false,
+            "enabled": false,
+            "entity_filter_field": "host",
+            "entity_split_field": "host",
+            "entity_statop": "avg",
+            "entity_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "thruput",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "fill_gaps": "null_value",
+            "gap_custom_alert_value": 0.0,
+            "gap_severity": "unknown",
+            "gap_severity_color": "#CCCCCC",
+            "gap_severity_color_light": "#EEEEEE",
+            "gap_severity_value": "-1",
+            "is_filter_entities_to_service": false,
+            "is_recommended_time_policies": false,
+            "is_split_by_entity": true,
+            "key": "da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time",
+            "kpi_template_kpi_id": "",
+            "kpi_threshold_template_id": "",
+            "metric_qualifier": "",
+            "metric_search_spec": {
+                "metric_index": "",
+                "metric_name": ""
+            },
+            "recommendation_training_window": "-30d",
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_entity(avg, thruput, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput, true, true, true)` | eval kpi=\"Network Throughput\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_single_value(avg, avg, thruput, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_entity(avg, thruput, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(avg)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput, true, true, true)` | eval kpi=\"Network Throughput\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
+            "search_alert_earliest": "5",
+            "search_alert_entities": "",
+            "search_buckets": "",
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_single_value(avg, avg, thruput, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
+            "search_occurrences": 1.0,
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_and_compare(avg, avg, thruput, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_entity_time_series(avg, thruput, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_entity_time_series(avg, thruput, \"host\", 5)` | `aggregate_entity_into_service_time_series(avg, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-network-throughput)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network | bin _time span=5m | stats avg(bytes) as thruput by host _time | `aggregate_raw_into_limited_entity_time_series(avg, thruput, \"host\", 5)`",
+            "search_type": "adhoc",
+            "service_title": "Network Infrastructure",
+            "threshold_direction": "both",
+            "threshold_eval": null,
+            "threshold_field": "thruput",
+            "time_policies": {
+                "policies": {
+                    "default_policy": {
+                        "aggregate_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "Network_Error_Rate",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "entity_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "Network_Error_Rate",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "policy_type": "static",
+                        "time_blocks": [],
+                        "title": "Default"
+                    }
+                }
+            },
+            "title": "Network Throughput",
+            "trending_ad": {
+                "sensitivity": 8
+            },
+            "type": "kpis_primary",
+            "tz_offset": null,
+            "unit": "",
+            "urgency": 5.0,
+            "use_time_policies": false,
+            "was_recommendation_modified": false
+        },
+        {
+            "adaptive_thresholding_training_window": "-7d",
+            "adaptive_thresholds_is_enabled": false,
+            "aggregate_eval": null,
+            "aggregate_statop": "sum",
+            "aggregate_threshold_alert_enabled": false,
+            "aggregate_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "aggregate",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "aggregate_thresholds_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_enabled": false,
+            "aggregate_thresholds_custom_alert_rules": [],
+            "alert_eval": null,
+            "alert_lag": "30",
+            "alert_on": "both",
+            "alert_period": "5",
+            "anomaly_detection_alerting_enabled": false,
+            "anomaly_detection_is_enabled": false,
+            "anomaly_detection_sensitivity": null,
+            "anomaly_detection_training_window": null,
+            "backfill_earliest_time": "-7d",
+            "backfill_enabled": false,
+            "base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time",
+            "base_search_id": null,
+            "base_search_metric": null,
+            "cohesive_ad": {
+                "sensitivity": 8
+            },
+            "cohesive_anomaly_detection_is_enabled": false,
+            "datamodel": {
+                "datamodel": "",
+                "field": "",
+                "object": "",
+                "owner_field": ""
+            },
+            "datamodel_filter": [],
+            "datamodel_filter_clauses": null,
+            "description": "Measures the percentage of packets that are lost in transmission.",
+            "did_load_recommendation": false,
+            "enabled": false,
+            "entity_filter_field": "host",
+            "entity_split_field": "host",
+            "entity_statop": "avg",
+            "entity_thresholds": {
+                "base_severity_color": "#99D18B",
+                "base_severity_color_light": "#DCEFD7",
+                "base_severity_label": "normal",
+                "base_severity_value": 2.0,
+                "gauge_max": 100,
+                "gauge_min": 0,
+                "is_max_static": false,
+                "is_min_static": true,
+                "metric_field": "packet_loss",
+                "render_boundary_max": 100.0,
+                "render_boundary_min": 0.0,
+                "threshold_levels": []
+            },
+            "fill_gaps": "null_value",
+            "gap_custom_alert_value": 0.0,
+            "gap_severity": "unknown",
+            "gap_severity_color": "#CCCCCC",
+            "gap_severity_color_light": "#EEEEEE",
+            "gap_severity_value": "-1",
+            "is_filter_entities_to_service": false,
+            "is_recommended_time_policies": false,
+            "is_split_by_entity": true,
+            "key": "da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss",
+            "kpi_base_search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time",
+            "kpi_template_kpi_id": "",
+            "kpi_threshold_template_id": "",
+            "metric_qualifier": "",
+            "metric_search_spec": {
+                "metric_index": "",
+                "metric_name": ""
+            },
+            "recommendation_training_window": "-30d",
+            "search": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_entity(avg, packet_loss, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(sum)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss, true, true, true)` | eval kpi=\"Packet Loss\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
+            "search_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_single_value(avg, sum, packet_loss, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
+            "search_alert": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_entity(avg, packet_loss, \"host\")` | eval sec_grp = \"default_itsi_security_group\" | `match_entities(host, sec_grp)` | eval serviceid = \"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `aggregate_entity_into_service(sum)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss, true, true, true)` | eval kpi=\"Packet Loss\", urgency=\"5\", alert_period=\"5\", serviceid=\"da-itsi-cp-atlas-windowsnetwork-infrastructure\" | `assess_urgency` | `gettime`",
+            "search_alert_earliest": "5",
+            "search_alert_entities": "",
+            "search_buckets": "",
+            "search_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_single_value(avg, sum, packet_loss, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
+            "search_occurrences": 1.0,
+            "search_time_compare": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_and_compare(avg, sum, packet_loss, \"host\", 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
+            "search_time_series": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_entity_time_series(avg, packet_loss, \"host\", 5)` | `aggregate_entity_into_service_time_series(sum, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
+            "search_time_series_aggregate": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_entity_time_series(avg, packet_loss, \"host\", 5)` | `aggregate_entity_into_service_time_series(sum, 5)` | `assess_severity(da-itsi-cp-atlas-windowsnetwork-infrastructure, da-itsi-cp-atlas-windowsnetwork-infrastructure-packet-loss)`",
+            "search_time_series_entities": "`itsi-cp-atlas-windows-indexes` sourcetype=Perfmon:Network OR sourcetype=PerfmonMk:Network \n| bin _time span=5m \n| eval loss=packets_in-packets_out \n| stats sum(loss) as packet_loss by host _time | `aggregate_raw_into_limited_entity_time_series(avg, packet_loss, \"host\", 5)`",
+            "search_type": "adhoc",
+            "service_title": "Network Infrastructure",
+            "threshold_direction": "both",
+            "threshold_eval": null,
+            "threshold_field": "packet_loss",
+            "time_policies": {
+                "policies": {
+                    "default_policy": {
+                        "aggregate_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "Network_Error_Rate",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "entity_thresholds": {
+                            "base_severity_color": "#99D18B",
+                            "base_severity_color_light": "#DCEFD7",
+                            "base_severity_label": "normal",
+                            "base_severity_value": 2.0,
+                            "gauge_max": 100,
+                            "gauge_min": 0,
+                            "is_max_static": false,
+                            "is_min_static": true,
+                            "metric_field": "Network_Error_Rate",
+                            "render_boundary_max": 100.0,
+                            "render_boundary_min": 0.0,
+                            "threshold_levels": []
+                        },
+                        "policy_type": "static",
+                        "time_blocks": [],
+                        "title": "Default"
+                    }
+                }
+            },
+            "title": "Packet Loss",
+            "trending_ad": {
+                "sensitivity": 8
+            },
+            "type": "kpis_primary",
+            "tz_offset": null,
+            "unit": "",
+            "urgency": 5.0,
+            "use_time_policies": false,
+            "was_recommendation_modified": false
         }
     ],
     "service_tags": {
